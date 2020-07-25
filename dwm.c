@@ -2644,8 +2644,12 @@ updatelast(Monitor *m)
 	for (c = nexttiled(m->clients); c && c->next && c != last; c = nexttiled(c->next)) {
 		if (ISLAST(c)) {
 			detach(c);
-			c->next = last->next;
-			last->next = c;
+			if (last) {
+				c->next = last->next;
+				last->next = c;
+			}else{
+				attach(c);
+			}
 		}
 	}
 }
