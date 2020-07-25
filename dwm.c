@@ -866,7 +866,7 @@ drawbar(Monitor *m)
 		if (c->isurgent)
 			urg |= c->tags;
 	}
-	x = 0;
+	x = m->bt = m->btw = 0;
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
 		// Improve selected monitor visibility by using Color7 only when
@@ -883,12 +883,12 @@ drawbar(Monitor *m)
 		x += w;
 	}
 
-	int scmlts=Color2;
+	scm=Color2;
 	if (m->nmaster > 1)
-		scmlts=Color8;
+		scm=Color8;
 
 	w = blw = TEXTW(m->ltsymbol);
-	drw_setscheme(drw, scheme[scmlts]);
+	drw_setscheme(drw, scheme[scm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
 	// Draw nmaster indicator
@@ -896,12 +896,8 @@ drawbar(Monitor *m)
 	char str[11];
 	sprintf(str, "%d", m->nmaster);
 	w = TEXTW(str)-lrpad/2;
-	drw_setscheme(drw, scheme[scmlts]);
+	drw_setscheme(drw, scheme[scm]);
 	x = drw_text(drw, x, 0, w, bh, 0, str, 0);
-
-
-	m->bt = 0;
-	m->btw = 0;
 
 	//Reset the dynamic portion of the status bar
 	drw_setscheme(drw, scheme[Color0]);
@@ -926,8 +922,7 @@ drawbar(Monitor *m)
 							 w, drw->fonts->h, lrpad / 2, " ", 0);
 				x += tabPad;
 			}
-			x -= tabPad;
-			x += lrpad/2;
+			x = x - tabPad + lrpad/2;
 		} else {
 			drw_setscheme(drw, scheme[Color0]);
 			drw_rect(drw, x, 0, w, bh, 1, 1);
@@ -937,8 +932,13 @@ drawbar(Monitor *m)
 	m->bt = n;
 	m->btw = (tabPadded)*n;
 
+	if (m->sel == NULL) {
+		drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+		return;
+	}
+
 	// Draw PID
-	if ((w = m->ww - sw - x) > bh && m->sel && m->sel->pid) {
+	if ((w = m->ww - sw - x) > bh && m->sel->pid) {
 		char str[15];
 		sprintf(str, "PID:%d", m->sel->pid);
 		w = TEXTW(str);
@@ -947,105 +947,98 @@ drawbar(Monitor *m)
 		x += lrpad/2;
 	}
 
-	// Draw 'Locked' indicator
-	if ((m->ww - sw - x) > bh && m->sel != NULL && ISLOCKED(m->sel)) {
+	// Draw Flags
+	if ((m->ww - sw - x) > bh && ISLOCKED(m->sel)) {
 		w = TEXTW("Locked");
 		drw_setscheme(drw, scheme[Color5]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Locked", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && m->sel != NULL && ISSTICKY(m->sel)) {
+	if ((m->ww - sw - x) > bh && ISSTICKY(m->sel)) {
 		w = TEXTW("Sticky");
 		drw_setscheme(drw, scheme[Color3]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Sticky", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && m->sel != NULL && m->sel->skip) {
+	if ((m->ww - sw - x) > bh && m->sel->skip) {
 		w = TEXTW("SKIP");
 		drw_setscheme(drw, scheme[Color4]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "SKIP", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && m->sel != NULL && ISLAST(m->sel)) {
+	if ((m->ww - sw - x) > bh && ISLAST(m->sel)) {
 		w = TEXTW("Last");
 		drw_setscheme(drw, scheme[Color9]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Last", 0);
 		x += lrpad/2;
 	}
 
+	if ((m->ww - sw - x) > bh && m->sel->isfloating) {
+		char *str = "Floating";
+		drw_setscheme(drw, scheme[Color6]);
+		x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
+		x += lrpad/2;
+	}
+
 	// Draw title in the remaining width
-	if ((w = m->ww - sw - x) > bh) {
-		if (m->sel && m->sel->name != NULL) {
+	if ((w = m->ww - sw - x) > bh && m->sel->name) {
+		// Check if there is a need to have a progress indicator. We do that by
+		// checking whether is a percentage expression, e.g. 55%, in the title.
+		regmatch_t matches[2];
+		const char * p = m->sel->name;
+		if (regexec(&regex, p, 1, matches, 0)) {
+			// Disable Scheme select as we already implemented in tags
+			drw_setscheme(drw, scheme[Color0]);
+			w = TEXTW(p);
+			drw_text(drw, x, 0, w, bh, lrpad / 2, p, 0);
+		} else {
+			// Draw a progress indicator by highlighting characters in the title
+			// Add space padding
+			char title[strlen(p)+3];
+			memset(title,'\0', sizeof(title));
+			memcpy(title+1, p, strlen(p));
+			title[0] = title[strlen(p)+1] =' ';
+			p = title;
 
-			if (m->sel->isfloating) {
-				char *str = "Floating";
-				drw_setscheme(drw, scheme[Color6]);
-				x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
-				x += lrpad/2;
-			}
+			//Get the percentage, which has the following expression [[:digit]]{1,3}%
+			char tmp[sizeof(title)];
+			for (i=(strlen(p)-1); i>=0; i--)
+				if (p[i]=='%') break;
+			int pos1 = i;
+			// Find the last space after %
+			for (i=pos1; i>=0; i--)
+			if (p[i]==' ') break;
+			int pos2 = i;
+			memset(tmp,'\0', sizeof(tmp));
+			memcpy(tmp, p+pos2, pos1-pos2);
+			float per= atoi(tmp) * 0.01;
 
-			// Check if there is a need to have a progress indicator. We do that by
-			// checking whether is a percentage expression, e.g. 55%, in the title.
-			regmatch_t matches[2];
-			const char * p = m->sel->name;
-			if (regexec(&regex, p, 1, matches, 0)) {
-				// Disable Scheme select as we already implemented in tags
-				/* drw_setscheme(drw, scheme[m == selmon ? Color1 : Color0]); */
-				drw_setscheme(drw, scheme[Color0]);
-				w = TEXTW(p);
-				drw_text(drw, x, 0, w, bh, lrpad / 2, p, 0);
-			} else {
-				// Draw a progress indicator by highlighting characters in the title
+			// From the percentage, find how many characters needs to be highlighted
+			int numChar= (strlen(p)) * per;
 
-				// Add space padding
-				char title[strlen(p)+3];
-				memset(title,'\0', sizeof(title));
-				memcpy(title+1, p, strlen(p));
-				title[0] = title[strlen(p)+1] =' ';
-				p = title;
-
-				//Get the percentage, which has the following expression [[:digit]]{1,3}%
-				char tmp[sizeof(title)];
-				for (i=(strlen(p)-1); i>=0; i--)
-					if (p[i]=='%')
-						break;
-				int pos1 = i;
-				// Find the last space after %
-				for (i=pos1; i>=0; i--)
-					if (p[i]==' ')
-						break;
-				int pos2 = i;
-				memset(tmp,'\0', sizeof(tmp));
-				memcpy(tmp, p+pos2, pos1-pos2);
-				float per= atoi(tmp) * 0.01;
-
-				// From the percentage, find how many characters needs to be highlighted
-				int numChar= (strlen(p)) * per;
-
-				//Start drawing
-				if (numChar>0) {
-					// Highlighted part
-					drw_setscheme(drw, scheme[Color1]);
-					memset(tmp,'\0',sizeof(tmp));
-					memcpy(tmp, p, numChar);
-					w = TEXTW(tmp)- lrpad;
-					x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
-				}
-
-				// Draw Non-highlighted part
-				drw_setscheme(drw, scheme[Color0]);
+			//Start drawing
+			if (numChar>0) {
+				// Highlighted part
+				drw_setscheme(drw, scheme[Color1]);
 				memset(tmp,'\0',sizeof(tmp));
-				memcpy(tmp, p+numChar, strlen(p)-numChar);
-				w = TEXTW(tmp)-lrpad;
+				memcpy(tmp, p, numChar);
+				w = TEXTW(tmp)- lrpad;
 				x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
 			}
-		} else {
+
+			// Draw Non-highlighted part
 			drw_setscheme(drw, scheme[Color0]);
-			drw_rect(drw, x, 0, w, bh, 1, 1);
+			memset(tmp,'\0',sizeof(tmp));
+			memcpy(tmp, p+numChar, strlen(p)-numChar);
+			w = TEXTW(tmp)-lrpad;
+			x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
 		}
+	} else {
+		drw_setscheme(drw, scheme[Color0]);
+		drw_rect(drw, x, 0, w, bh, 1, 1);
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
