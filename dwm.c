@@ -469,8 +469,8 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	updatesticky(m);
 	updatelast(m);
+	updatesticky(m);
 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
 	if (m->lt[m->sellt]->arrange)
 		m->lt[m->sellt]->arrange(m);
@@ -865,10 +865,10 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
 		// Improve selected monitor visibility by using Color7 only when
 		// this monitor is the current monitor
-		int highlightScheme = Color7;
+		scm = Color7;
 		if ( m != selmon )
-			highlightScheme = Color6;
-		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? highlightScheme : Color0]);
+			scm = Color6;
+		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? scm : Color0]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
@@ -940,16 +940,16 @@ drawbar(Monitor *m)
 
 	// Draw Flags
 	if ((m->ww - tw - x) > bh && ISLOCKED(m->sel)) {
-		w = TEXTW("Locked");
+		w = TEXTW("LOCKED");
 		drw_setscheme(drw, scheme[Color5]);
-		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Locked", 0);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "LOCKED", 0);
 		x += lrpad/2;
 	}
 
 	if ((m->ww - tw - x) > bh && ISSTICKY(m->sel)) {
-		w = TEXTW("Sticky");
+		w = TEXTW("STICKY");
 		drw_setscheme(drw, scheme[Color3]);
-		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Sticky", 0);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "STICKY", 0);
 		x += lrpad/2;
 	}
 
@@ -961,16 +961,16 @@ drawbar(Monitor *m)
 	}
 
 	if ((m->ww - tw - x) > bh && ISLAST(m->sel)) {
-		w = TEXTW("Last");
+		w = TEXTW("LAST");
 		drw_setscheme(drw, scheme[Color9]);
-		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Last", 0);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "LAST", 0);
 		x += lrpad/2;
 	}
 
 	if ((m->ww - tw - x) > bh && ISFLOATING(m->sel)) {
-		char *str = "Floating";
+		w = TEXTW("FLOATING");
 		drw_setscheme(drw, scheme[Color6]);
-		x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "FLOATING", 0);
 		x += lrpad/2;
 	}
 
