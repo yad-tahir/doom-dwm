@@ -318,12 +318,14 @@ centeredfloatingmaster(Monitor *m)
 		w = (mw + mxo - mx) / (MIN(n, m->nmaster) - i);
 		resize(c, m->wx + mx, m->wy + my, w - (2*c->bw),
 			   mh - (2*c->bw), 0);
-		mx += WIDTH(c);
+		if ( mx + WIDTH(c) < m->ww )
+			mx += WIDTH(c);
 	} else {
 		/* stack clients are stacked horizontally */
 		w = (m->ww - tx) / (n - i);
 		resize(c, m->wx + tx, m->wy, w - (2*c->bw),
 			   m->wh - (2*c->bw), 0);
-		tx += WIDTH(c);
+		if ( tx + WIDTH(c) < m->ww )
+			tx += WIDTH(c);
 	}
 }
