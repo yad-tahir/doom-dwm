@@ -58,10 +58,11 @@
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
+#define ISFLOATING(C)           ((C->isfloating))
+#define ISLAST(C)               ((C->islast))
 #define ISLOCKED(C)             ((C->islocked))
 #define ISSKIP(C)				((C->skip))
 #define ISSTICKY(C)             ((C->pertag->issticky[selmon->pertag->curtag]))
-#define ISLAST(C)               ((C->islast))
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -415,7 +416,7 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 		*h = bh;
 	if (*w < bh)
 		*w = bh;
-	if (resizehints || c->isfloating || !c->mon->lt[c->mon->sellt]->arrange) {
+	if (resizehints || ISFLOATING(c) || !c->mon->lt[c->mon->sellt]->arrange) {
 		/* see last two sentences in ICCCM 4.1.2.3 */
 		baseismin = c->basew == c->minw && c->baseh == c->minh;
 		if (!baseismin) { /* temporarily remove base dimensions */
@@ -688,7 +689,7 @@ configurerequest(XEvent *e)
 	if ((c = wintoclient(ev->window))) {
 		if (ev->value_mask & CWBorderWidth)
 			c->bw = ev->border_width;
-		else if (c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
+		else if (ISFLOATING(c) || !selmon->lt[selmon->sellt]->arrange) {
 			m = c->mon;
 			if (ev->value_mask & CWX) {
 				c->oldx = c->x;
@@ -706,9 +707,9 @@ configurerequest(XEvent *e)
 				c->oldh = c->h;
 				c->h = ev->height;
 			}
-			if ((c->x + c->w) > m->mx + m->mw && c->isfloating)
+			if ((c->x + c->w) > m->mx + m->mw && ISFLOATING(c))
 				c->x = m->mx + (m->mw / 2 - WIDTH(c) / 2); /* center in x direction */
-			if ((c->y + c->h) > m->my + m->mh && c->isfloating)
+			if ((c->y + c->h) > m->my + m->mh && ISFLOATING(c))
 				c->y = m->my + (m->mh / 2 - HEIGHT(c) / 2); /* center in y direction */
 			if ((ev->value_mask & (CWX|CWY)) && !(ev->value_mask & (CWWidth|CWHeight)))
 				configure(c);
@@ -977,7 +978,7 @@ drawbar(Monitor *m)
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && m->sel->isfloating) {
+	if ((m->ww - sw - x) > bh && ISFLOATING(m->sel)) {
 		char *str = "Floating";
 		drw_setscheme(drw, scheme[Color6]);
 		x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
@@ -1380,7 +1381,7 @@ incnmaster(const Arg *arg)
 void
 inplacerotate(const Arg *arg)
 {
-	if (!selmon->sel || (selmon->sel->isfloating && !arg->f)) return;
+	if (!selmon->sel || (ISFLOATING(selmon->sel) && !arg->f)) return;
 
 	unsigned int selidx = 0, i = 0;
 	Client *c = NULL, *stail = NULL, *mhead = NULL, *mtail = NULL, *shead = NULL;
@@ -1394,13 +1395,13 @@ inplacerotate(const Arg *arg)
 
 	// Shift client
 	for (c = selmon->clients; c; c = c->next) {
-		if (ISVISIBLE(c) && !(c->isfloating)) {
-		if (selmon->sel == c) { selidx = i; }
-		if (i == selmon->nmaster - 1) { mtail = c; }
-		if (i == selmon->nmaster) { shead = c; }
-		if (mhead == NULL) { mhead = c; }
-		stail = c;
-		i++;
+		if (ISVISIBLE(c) && !(ISFLOATING(c))) {
+			if (selmon->sel == c) { selidx = i; }
+			if (i == selmon->nmaster - 1) { mtail = c; }
+			if (i == selmon->nmaster) { shead = c; }
+			if (mhead == NULL) { mhead = c; }
+			stail = c;
+			i++;
 		}
 	}
 	if (arg->i < 0 && selidx >= selmon->nmaster) insertclient(stail, shead, 1);
@@ -1411,7 +1412,7 @@ inplacerotate(const Arg *arg)
 	// Restore focus position
 	i = 0;
 	for (c = selmon->clients; c; c = c->next) {
-		if (!ISVISIBLE(c) || (c->isfloating)) continue;
+		if (!ISVISIBLE(c) || (ISFLOATING(c))) continue;
 		if (i == selidx) { focus(c); break; }
 		i++;
 	}
@@ -1565,9 +1566,9 @@ manage(Window w, XWindowAttributes *wa)
 	updatewindowPID(c);
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
-	if (!c->isfloating)
+	if (!ISFLOATING(c))
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
-	if (c->isfloating)
+	if (ISFLOATING(c))
 		XRaiseWindow(dpy, c->win);
 	attach(c);
 	attachstack(c);
@@ -1651,10 +1652,10 @@ movemouse(const Arg *arg)
 				ny = selmon->wy;
 			else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
 				ny = selmon->wy + selmon->wh - HEIGHT(c);
-			if (!c->isfloating && selmon->lt[selmon->sellt]->arrange
+			if (!ISFLOATING(c) && selmon->lt[selmon->sellt]->arrange
 			&& (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
 				togglefloating(NULL);
-			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if (!selmon->lt[selmon->sellt]->arrange || ISFLOATING(c))
 				resize(c, nx, ny, c->w, c->h, 1);
 			break;
 		}
@@ -1683,19 +1684,19 @@ movestack(const Arg *arg) {
 
 	if (arg->i > 0) {
 		/* find the client after selmon->sel */
-		for (c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+		for (c = selmon->sel->next; c && (!ISVISIBLE(c) || ISFLOATING(c)); c = c->next);
 		if (!c)
-			for (c = selmon->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+			for (c = selmon->clients; c && (!ISVISIBLE(c) || ISFLOATING(c)); c = c->next);
 
 	}
 	else {
 		/* find the client before selmon->sel */
 		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i) && !i->isfloating)
+			if (ISVISIBLE(i) && !ISFLOATING(i))
 				c = i;
 		if (!c)
 			for (; i; i = i->next)
-				if (ISVISIBLE(i) && !i->isfloating)
+				if (ISVISIBLE(i) && !ISFLOATING(i))
 					c = i;
 	}
 	/* find the client before selmon->sel and c */
@@ -1736,7 +1737,7 @@ nexttiled(Client *c)
 {
 	// Search till a tiled client, formally defined as a non-floating client
 	// currently visible and not hidden
-	for (; c && (c->isfloating || !ISVISIBLE(c) || HIDDEN(c)); c = c->next);
+	for (; c && (ISFLOATING(c) || !ISVISIBLE(c) || HIDDEN(c)); c = c->next);
 	return c;
 }
 
@@ -1766,8 +1767,8 @@ propertynotify(XEvent *e)
 		switch(ev->atom) {
 		default: break;
 		case XA_WM_TRANSIENT_FOR:
-			if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
-				(c->isfloating = (wintoclient(trans)) != NULL))
+			if (!ISFLOATING(c) && (XGetTransientForHint(dpy, c->win, &trans)) &&
+				(ISFLOATING(c) = (wintoclient(trans)) != NULL))
 				arrange(c->mon);
 			break;
 		case XA_WM_NORMAL_HINTS:
@@ -1866,11 +1867,11 @@ resizemouse(const Arg *arg)
 			if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww
 			&& c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh)
 			{
-				if (!c->isfloating && selmon->lt[selmon->sellt]->arrange
+				if (!ISFLOATING(c) && selmon->lt[selmon->sellt]->arrange
 				&& (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
 					togglefloating(NULL);
 			}
-			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+			if (!selmon->lt[selmon->sellt]->arrange || ISFLOATING(c))
 				resize(c, c->x, c->y, nw, nh, 1);
 			break;
 		}
@@ -1895,13 +1896,13 @@ restack(Monitor *m)
 	drawbar(m);
 	if (!m->sel)
 		return;
-	if (m->sel->isfloating || !m->lt[m->sellt]->arrange)
+	if (ISFLOATING(m->sel) || !m->lt[m->sellt]->arrange)
 		XRaiseWindow(dpy, m->sel->win);
 	if (m->lt[m->sellt]->arrange) {
 		wc.stack_mode = Below;
 		wc.sibling = m->barwin;
 		for (c = m->stack; c; c = c->snext)
-			if (!c->isfloating && ISVISIBLE(c)) {
+			if (!ISFLOATING(c) && ISVISIBLE(c)) {
 				XConfigureWindow(dpy, c->win, CWSibling|CWStackMode, &wc);
 				wc.sibling = c->win;
 			}
@@ -2239,7 +2240,7 @@ showhide(Client *c)
 	if (ISVISIBLE(c)) {
 		/* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
-		if (!c->mon->lt[c->mon->sellt]->arrange || c->isfloating)
+		if (!c->mon->lt[c->mon->sellt]->arrange || ISFLOATING(c))
 			resize(c, c->x, c->y, c->w, c->h, 0);
 		showhide(c->snext);
 	} else {
@@ -2339,7 +2340,7 @@ togglefloating(const Arg *arg)
 	if (!selmon->sel)
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-	if (selmon->sel->isfloating)
+	if (ISFLOATING(selmon->sel))
 		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
 			selmon->sel->w, selmon->sel->h, 0);
 	arrange(selmon);
@@ -2725,7 +2726,7 @@ updatesticky(Monitor *m)
 
 	// Disable sticky flags on all floating clients
 	for (c = m->clients; c; c = c->next)
-		if ((c->isfloating || ISLAST(c)) && ISVISIBLE(c) && ISSTICKY(c))
+		if ((ISFLOATING(c) || ISLAST(c)) && ISVISIBLE(c) && ISSTICKY(c))
 			c->pertag->issticky[m->pertag->curtag] = 0;
 
 	int num = m->stickies;
