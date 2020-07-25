@@ -201,6 +201,7 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
+static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
 static Atom getcardinalprop(Client *c, Atom prop);
@@ -831,7 +832,7 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w, sw = 0, n = 0, scm;
+	int x, w, tw = 0, n = 0, scm;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -840,7 +841,7 @@ drawbar(Monitor *m)
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon || unhiden_statusbar) {
 		drw_setscheme(drw, scheme[Color0]);
-		sw = stextw + 2; /* 2px right padding */
+		tw = stextw + 2; /* 2px right padding */
 		// To add color support, we need a loop to parse stext
 		char *ts = stext;
 		char *tp = stext;
@@ -850,7 +851,7 @@ drawbar(Monitor *m)
 			if ((unsigned int)*ts > LENGTH(colors)) { ts++; continue; }
 			ctmp = *ts;
 			*ts = '\0';
-			drw_text(drw, m->ww - sw + tx, 0, sw - tx, bh, 0, tp, 0);
+			drw_text(drw, m->ww - tw + tx, 0, tw - tx, bh, 0, tp, 0);
 			tx += TEXTW(tp)-lrpad;
 			if (ctmp == '\0') { break; }
 			drw_setscheme(drw, scheme[(unsigned int)(ctmp-1)]);
@@ -903,13 +904,13 @@ drawbar(Monitor *m)
 
 	//Reset the dynamic portion of the status bar
 	drw_setscheme(drw, scheme[Color0]);
-	drw_text(drw, x, 0, m->ww - sw - x , bh, lrpad / 2, " ", 0);
+	drw_text(drw, x, 0, m->ww - tw - x , bh, lrpad / 2, " ", 0);
 
 	// Draw stack indicators
 	w = stackbar_width;
 	int tabPad = 2;
 	int tabPadded = w + tabPad;
-	if ((m->ww - sw - x) > bh) {
+	if ((m->ww - tw - x) > bh) {
 		x += lrpad/2;
 		if (n > 0) {
 			for (c = m->clients; c; c = c->next) {
@@ -940,7 +941,7 @@ drawbar(Monitor *m)
 	}
 
 	// Draw PID
-	if ((w = m->ww - sw - x) > bh && m->sel->pid) {
+	if ((w = m->ww - tw - x) > bh && m->sel->pid) {
 		char str[15];
 		sprintf(str, "PID:%d", m->sel->pid);
 		w = TEXTW(str);
@@ -950,35 +951,35 @@ drawbar(Monitor *m)
 	}
 
 	// Draw Flags
-	if ((m->ww - sw - x) > bh && ISLOCKED(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISLOCKED(m->sel)) {
 		w = TEXTW("Locked");
 		drw_setscheme(drw, scheme[Color5]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Locked", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && ISSTICKY(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISSTICKY(m->sel)) {
 		w = TEXTW("Sticky");
 		drw_setscheme(drw, scheme[Color3]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Sticky", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && ISSKIP(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISSKIP(m->sel)) {
 		w = TEXTW("SKIP");
 		drw_setscheme(drw, scheme[Color4]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "SKIP", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && ISLAST(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISLAST(m->sel)) {
 		w = TEXTW("Last");
 		drw_setscheme(drw, scheme[Color9]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Last", 0);
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && ISFLOATING(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISFLOATING(m->sel)) {
 		char *str = "Floating";
 		drw_setscheme(drw, scheme[Color6]);
 		x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
@@ -986,7 +987,7 @@ drawbar(Monitor *m)
 	}
 
 	// Draw title in the remaining width
-	if ((w = m->ww - sw - x) > bh && m->sel->name) {
+	if ((w = m->ww - tw - x) > bh && m->sel->name) {
 		// Check if there is a need to have a progress indicator. We do that by
 		// checking whether is a percentage expression, e.g. 55%, in the title.
 		regmatch_t matches[2];
@@ -2095,7 +2096,7 @@ setmfact(const Arg *arg)
 	if (!arg || !selmon->lt[selmon->sellt]->arrange)
 		return;
 	f = arg->f < 1.0 ? arg->f + selmon->mfact : arg->f - 1.0;
-	if (f < 0.1 || f > 0.9)
+	if (f < 0.05 || f > 0.95)
 		return;
 	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag] = f;
 	arrange(selmon);
