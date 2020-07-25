@@ -254,12 +254,14 @@ static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglelast(const Arg *arg);
 static void togglelocked(const Arg *arg);
+static void toggleskip(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void togglewin(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
+static void unskipall(const Arg *arg);
 static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientlist(void);
@@ -280,8 +282,6 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
-static void toggleskip(const Arg *arg);
-static void unskipall(const Arg *arg);
 
 /* variables */
 static const char broken[] = "broken";
@@ -2366,6 +2366,15 @@ togglelocked(const Arg *arg)
 }
 
 void
+toggleskip(const Arg *arg)
+{
+	if (selmon->sel != NULL) {
+		selmon->sel->skip ^= 1;
+		drawbar(selmon);
+	}
+}
+
+void
 toggletag(const Arg *arg)
 {
 	unsigned int newtags;
@@ -2483,6 +2492,19 @@ unmapnotify(XEvent *e)
 		else
 			unmanage(c, 0);
 	}
+}
+
+void
+unskipall(const Arg *arg)
+{
+	if (selmon != NULL) {
+		Client *c;
+		for (c = selmon->clients; c; c = c->next) {
+			if (ISVISIBLE(c) && ISSKIP(c))
+				c->skip = 0;
+		}
+	}
+	drawbar(selmon);
 }
 
 void
@@ -2952,29 +2974,6 @@ zoom(const Arg *arg)
 	}
 
 	drawbar(c->mon);
-}
-
-void
-toggleskip(const Arg *arg)
-{
-	if (selmon->sel != NULL) {
-		selmon->sel->skip ^= 1;
-		drawbar(selmon);
-	}
-}
-
-
-void
-unskipall(const Arg *arg)
-{
-	if (selmon != NULL) {
-		Client *c;
-		for (c = selmon->clients; c; c = c->next) {
-			if (ISVISIBLE(c) && ISSKIP(c))
-				c->skip = 0;
-		}
-	}
-	drawbar(selmon);
 }
 
 int
