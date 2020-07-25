@@ -59,6 +59,7 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define ISLOCKED(C)             ((C->islocked))
+#define ISSKIP(C)				((C->skip))
 #define ISSTICKY(C)             ((C->pertag->issticky[selmon->pertag->curtag]))
 #define ISLAST(C)               ((C->islast))
 
@@ -860,7 +861,7 @@ drawbar(Monitor *m)
 	for (c = m->clients; c; c = c->next) {
 		if (ISVISIBLE(c))
 			n++;
-		if (c->skip)
+		if (ISSKIP(c))
 			continue;
 		occ |= c->tags;
 		if (c->isurgent)
@@ -914,7 +915,7 @@ drawbar(Monitor *m)
 				if (!ISVISIBLE(c)) continue;
 				if (m->sel == c) scm = Color1;
 				else if (HIDDEN(c)) scm = Color4;
-				else if (c->skip) scm = Color4;
+				else if (ISSKIP(c)) scm = Color4;
 				else if (ISSTICKY(c)) scm = Color3;
 				else scm = Color6;
 				drw_setscheme(drw, scheme[scm]);
@@ -962,7 +963,7 @@ drawbar(Monitor *m)
 		x += lrpad/2;
 	}
 
-	if ((m->ww - sw - x) > bh && m->sel->skip) {
+	if ((m->ww - sw - x) > bh && ISSKIP(m->sel)) {
 		w = TEXTW("SKIP");
 		drw_setscheme(drw, scheme[Color4]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "SKIP", 0);
@@ -1138,7 +1139,7 @@ void
 focus(Client *c)
 {
 	if (!c || !ISVISIBLE(c) || HIDDEN(c))
-		for (c = selmon->stack; c && (!ISVISIBLE(c) || HIDDEN(c) || c->skip); c = c->snext);
+		for (c = selmon->stack; c && (!ISVISIBLE(c) || HIDDEN(c) || ISSKIP(c)); c = c->snext);
 	if (selmon->sel && selmon->sel != c)
 		unfocus(selmon->sel, 0);
 	if (c) {
@@ -1201,16 +1202,16 @@ focusstack(const Arg *arg)
 	int avoidSkip = arg->i > 0? arg->i == 1: arg->i == -1;
 	if (arg->i > 0) {
 		if (selmon->sel)
-			for (c = selmon->sel->next; c && (!ISVISIBLE(c) || (c->skip & avoidSkip)); c = c->next);
+			for (c = selmon->sel->next; c && (!ISVISIBLE(c) || (ISSKIP(c) & avoidSkip)); c = c->next);
 		if (!c)
-			for (c = selmon->clients; c && (!ISVISIBLE(c) || (c->skip & avoidSkip)); c = c->next);
+			for (c = selmon->clients; c && (!ISVISIBLE(c) || (ISSKIP(c) & avoidSkip)); c = c->next);
 	} else {
 			for (i = selmon->clients; i != selmon->sel; i = i->next)
-				if (i && ISVISIBLE(i) && !(i->skip & avoidSkip))
+				if (i && ISVISIBLE(i) && !(ISSKIP(i) & avoidSkip))
 					c = i;
 		if (!c)
 			for (; i; i = i->next)
-				if (ISVISIBLE(i) && !(i->skip & avoidSkip))
+				if (ISVISIBLE(i) && !(ISSKIP(i) & avoidSkip))
 					c = i;
 	}
 	if (c) {
@@ -2968,7 +2969,7 @@ unskipall(const Arg *arg)
 	if (selmon != NULL) {
 		Client *c;
 		for (c = selmon->clients; c; c = c->next) {
-			if (ISVISIBLE(c) && c->skip)
+			if (ISVISIBLE(c) && ISSKIP(c))
 				c->skip = 0;
 		}
 	}
