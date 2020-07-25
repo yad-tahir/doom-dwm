@@ -10,7 +10,8 @@ static const int topbar             = 1;        /* 0 means bottom bar */
 static const unsigned int barheight = 30;       /* status bar height */
 static const char *fonts[]          = { "DejaVu Sans Mono:size=12",
 										"FontAwesome:size=12" };
-static const int stackbar_width     = 10;       /* width of stackbar blocks */
+static const int stackbar_width     = 10;      /* width of stackbar blocks */
+static const int stackbar_padding   = 2;       /* padding for stackbar blocks */
 static const int focusonwheel       = 1;
 static const int unhiden_statusbar  = 1;       /*  shows status bar on all monitors */
 static const char *colors[][2]      = {
@@ -143,9 +144,7 @@ static Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
-	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} }, //hides win
-	{ ClkWinTitle,          0,              Button3,        zoom,           {0} },
-	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
+	{ ClkStackBar,          0,              Button1,        setclientfocus, {0} },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        resizemouse,    {0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },

@@ -74,8 +74,8 @@ enum { NetSupported, NetWMName, NetWMPID, NetWMState, NetWMCheck,
 	   NetWMFullscreen, NetActiveWindow, NetWMWindowType,
 	   NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
-enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
-	   ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
+enum { ClkTagBar, ClkLtSymbol, ClkStackBar, ClkClientWin,
+	   ClkRootWin }; /* clicks */
 
 typedef union {
 	int i;
@@ -137,8 +137,8 @@ struct Monitor {
 	int nmaster;
 	int num;
 	int by;               /* bar geometry */
-	int btw;              /* width of tasks portion of bar */
-	int bt;               /* number of tasks */
+	int bsx;              /* stack indicator location*/
+	int bsn;              /* number of bars in stack indicator */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
 	unsigned int seltags;
@@ -234,6 +234,7 @@ static void run(void);
 static void scan(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
+static void setclientfocus(const Arg *arg);
 static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
@@ -514,28 +515,18 @@ buttonpress(XEvent *e)
 		if (i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		}
-		//DISABLE MOUSE HANDLING VERY ANNOYING and BUGGY
-		/* else if (ev->x < x + blw) */
-			/* click = NULL; */
-		/* 2px right padding */
-		/* else if (ev->x > selmon->ww - TEXTW(stext) + lrpad - 2) */
-			/* click = ClkStatusText; */
-		else {
-			/* x += blw; */
-			/* c = m->clients; */
-
-			/* do { */
-			/*	if (!ISVISIBLE(c)) */
-			/*		continue; */
-			/*	else */
-			/*		x += (1.0 / (double)m->bt) * m->btw; */
-			/* } while (ev->x > x && (c = c->next)); */
-
-			/* if (c) { */
-			/*	click = ClkWinTitle; */
-			/*	arg.v = c; */
-			/* } */
+		}else if (ev->x >= selmon->bsx
+				  && ev->x < (selmon->bsx + selmon->bsn* (stackbar_width + stackbar_padding))) {
+			click = ClkStackBar;
+			int y = selmon->bsx;
+			for (c = nexttiled(selmon->clients); c; c = nexttiled(c->next)) {
+				if (ev->x >= y && ev->x < y + stackbar_width + stackbar_padding) {
+					arg.v = c;
+					break;
+				} else {
+					y += stackbar_width + stackbar_padding;
+				}
+			}
 		}
 	} else if ((c = wintoclient(ev->window))) {
 		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
@@ -547,7 +538,8 @@ buttonpress(XEvent *e)
 	for (i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 			&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)) {
-			buttons[i].func((click == ClkTagBar || click == ClkWinTitle) && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
+			buttons[i].func((click == ClkTagBar || click == ClkStackBar)
+						  && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
 			found=1;
 		}
 	// Pass the click to the client if there is no listeners in buttons
@@ -832,7 +824,7 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w, tw = 0, n = 0, scm;
+	int x = 0, w = 0, tw = 0, n = 0, scm;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -869,7 +861,6 @@ drawbar(Monitor *m)
 		if (c->isurgent)
 			urg |= c->tags;
 	}
-	x = m->bt = m->btw = 0;
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
 		// Improve selected monitor visibility by using Color7 only when
@@ -908,10 +899,9 @@ drawbar(Monitor *m)
 
 	// Draw stack indicators
 	w = stackbar_width;
-	int tabPad = 2;
-	int tabPadded = w + tabPad;
 	if ((m->ww - tw - x) > bh) {
 		x += lrpad/2;
+		m->bsx = x;
 		if (n > 0) {
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c)) continue;
@@ -923,17 +913,15 @@ drawbar(Monitor *m)
 				drw_setscheme(drw, scheme[scm]);
 				x = drw_text(drw, x, (bh - drw->fonts->h) / 2,
 							 w, drw->fonts->h, lrpad / 2, " ", 0);
-				x += tabPad;
+				x += stackbar_padding;
 			}
-			x = x - tabPad + lrpad/2;
+			x = x - stackbar_padding + lrpad/2;
 		} else {
 			drw_setscheme(drw, scheme[Color0]);
 			drw_rect(drw, x, 0, w, bh, 1, 1);
 		}
+		m->bsn = n;
 	}
-
-	m->bt = n;
-	m->btw = (tabPadded)*n;
 
 	if (m->sel == NULL) {
 		drw_map(drw, m->barwin, 0, 0, m->ww, bh);
@@ -2011,6 +1999,18 @@ sendmon(Client *c, Monitor *m)
 	attachstack(c);
 	focus(NULL);
 	arrange(NULL);
+}
+
+void
+setclientfocus(const Arg *arg)
+{
+	if (!arg)
+		return;
+
+	Client *c = (Client*)arg->v;
+	if (c) {
+		focus(c);
+	}
 }
 
 void
