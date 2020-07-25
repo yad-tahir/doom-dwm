@@ -323,7 +323,7 @@ struct Pertag {
 	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
 	float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
 	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
-	const Layout *ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes  */
+	const Layout *ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes */
 	int showbars[LENGTH(tags) + 1]; /* display bar for the current tag */
 	unsigned int stickies[LENGTH(tags) + 1]; /* number of sticky clients per tag */
 };
@@ -544,8 +544,8 @@ buttonpress(XEvent *e)
 	for (i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 			&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)) {
-		  buttons[i].func((click == ClkTagBar || click == ClkWinTitle) && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
-		  found=1;
+			buttons[i].func((click == ClkTagBar || click == ClkWinTitle) && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
+			found=1;
 		}
 	// Pass the click to the client if there is no listeners in buttons
 	if (click == ClkClientWin && !found)
@@ -618,7 +618,7 @@ clientmessage(XEvent *e)
 	if (cme->message_type == netatom[NetWMState]) {
 		if (cme->data.l[1] == netatom[NetWMFullscreen]
 		|| cme->data.l[2] == netatom[NetWMFullscreen])
-			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
+			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD */
 				|| cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */));
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
 		if (c != selmon->sel && !c->isurgent) {
@@ -761,9 +761,10 @@ createmon(void)
 }
 
 void
-cyclelayout(const Arg *arg) {
+cyclelayout(const Arg *arg)
+{
 	Layout *l;
-	for(l = (Layout *)layouts; l != selmon->lt[selmon->sellt]; l++);
+	for (l = (Layout *)layouts; l != selmon->lt[selmon->sellt]; l++);
 	if (arg->i > 0) {
 		if (l->symbol && (l + 1)->symbol)
 			setlayout(&((Arg) { .v = (l + 1) }));
@@ -871,7 +872,7 @@ drawbar(Monitor *m)
 		// Improve selected monitor visibility by using Color7 only when
 		// this monitor is the current monitor
 		int highlightScheme = Color7;
-		if( m != selmon )
+		if ( m != selmon )
 			highlightScheme = Color6;
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? highlightScheme : Color0]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
@@ -884,7 +885,7 @@ drawbar(Monitor *m)
 
 	int scmlts=Color2;
 	if (m->nmaster > 1)
-	  scmlts=Color8;
+		scmlts=Color8;
 
 	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, scheme[scmlts]);
@@ -911,31 +912,26 @@ drawbar(Monitor *m)
 	int tabPad = 2;
 	int tabPadded = w + tabPad;
 	if ((m->ww - sw - x) > bh) {
-	  x += lrpad/2;
-	  if (n > 0) {
-		for (c = m->clients; c; c = c->next) {
-		  if (!ISVISIBLE(c))
-			continue;
-		  if (m->sel == c)
-			scm = Color1;
-		  else if (HIDDEN(c))
-			scm = Color4;
-		  else if (c->skip)
-			scm = Color4;
-		  else if (ISSTICKY(c))
-			scm = Color3;
-		  else
-			scm = Color6;
-		  drw_setscheme(drw, scheme[scm]);
-		  x = drw_text(drw, x, (bh - drw->fonts->h) / 2, w, drw->fonts->h, lrpad / 2, " ", 0);
-		  x += tabPad;
-		}
-		x -= tabPad;
 		x += lrpad/2;
-	  } else {
-		drw_setscheme(drw, scheme[Color0]);
-		drw_rect(drw, x, 0, w, bh, 1, 1);
-	  }
+		if (n > 0) {
+			for (c = m->clients; c; c = c->next) {
+				if (!ISVISIBLE(c)) continue;
+				if (m->sel == c) scm = Color1;
+				else if (HIDDEN(c)) scm = Color4;
+				else if (c->skip) scm = Color4;
+				else if (ISSTICKY(c)) scm = Color3;
+				else scm = Color6;
+				drw_setscheme(drw, scheme[scm]);
+				x = drw_text(drw, x, (bh - drw->fonts->h) / 2,
+							 w, drw->fonts->h, lrpad / 2, " ", 0);
+				x += tabPad;
+			}
+			x -= tabPad;
+			x += lrpad/2;
+		} else {
+			drw_setscheme(drw, scheme[Color0]);
+			drw_rect(drw, x, 0, w, bh, 1, 1);
+		}
 	}
 
 	m->bt = n;
@@ -960,31 +956,31 @@ drawbar(Monitor *m)
 	}
 
 	if ((m->ww - sw - x) > bh && m->sel != NULL && ISSTICKY(m->sel)) {
-	  w = TEXTW("Sticky");
-	  drw_setscheme(drw, scheme[Color3]);
-	  x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Sticky", 0);
-	  x += lrpad/2;
+		w = TEXTW("Sticky");
+		drw_setscheme(drw, scheme[Color3]);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Sticky", 0);
+		x += lrpad/2;
 	}
 
 	if ((m->ww - sw - x) > bh && m->sel != NULL && m->sel->skip) {
-	  w = TEXTW("SKIP");
-	  drw_setscheme(drw, scheme[Color4]);
-	  x = drw_text(drw, x, 0, w, bh, lrpad / 2, "SKIP", 0);
-	  x += lrpad/2;
+		w = TEXTW("SKIP");
+		drw_setscheme(drw, scheme[Color4]);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "SKIP", 0);
+		x += lrpad/2;
 	}
 
 	if ((m->ww - sw - x) > bh && m->sel != NULL && ISLAST(m->sel)) {
-	  w = TEXTW("Last");
-	  drw_setscheme(drw, scheme[Color9]);
-	  x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Last", 0);
-	  x += lrpad/2;
+		w = TEXTW("Last");
+		drw_setscheme(drw, scheme[Color9]);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "Last", 0);
+		x += lrpad/2;
 	}
 
 	// Draw title in the remaining width
 	if ((w = m->ww - sw - x) > bh) {
 		if (m->sel && m->sel->name != NULL) {
 
-			if (m->sel->isfloating){
+			if (m->sel->isfloating) {
 				char *str = "Floating";
 				drw_setscheme(drw, scheme[Color6]);
 				x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
@@ -1013,12 +1009,12 @@ drawbar(Monitor *m)
 
 				//Get the percentage, which has the following expression [[:digit]]{1,3}%
 				char tmp[sizeof(title)];
-				for(i=(strlen(p)-1); i>=0; i--)
+				for (i=(strlen(p)-1); i>=0; i--)
 					if (p[i]=='%')
 						break;
 				int pos1 = i;
 				// Find the last space after %
-				for(i=pos1; i>=0; i--)
+				for (i=pos1; i>=0; i--)
 					if (p[i]==' ')
 						break;
 				int pos2 = i;
@@ -1045,11 +1041,11 @@ drawbar(Monitor *m)
 				memcpy(tmp, p+numChar, strlen(p)-numChar);
 				w = TEXTW(tmp)-lrpad;
 				x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
+			}
+		} else {
+			drw_setscheme(drw, scheme[Color0]);
+			drw_rect(drw, x, 0, w, bh, 1, 1);
 		}
-	} else {
-		drw_setscheme(drw, scheme[Color0]);
-		drw_rect(drw, x, 0, w, bh, 1, 1);
-	  }
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
@@ -1355,7 +1351,8 @@ grabkeys(void)
 }
 
 void
-hide(Client *c) {
+hide(Client *c)
+{
 	if (!c || HIDDEN(c))
 		return;
 
@@ -1395,7 +1392,7 @@ inplacerotate(const Arg *arg)
 	Client *c = NULL, *stail = NULL, *mhead = NULL, *mtail = NULL, *shead = NULL;
 	int numStickies = 0;
 
-	if(arg->i > 1 || arg->i < -1) {
+	if (arg->i > 1 || arg->i < -1) {
 		numStickies = selmon->stickies;
 		selmon->stickies = 0;
 		updatesticky(selmon);
@@ -1424,7 +1421,7 @@ inplacerotate(const Arg *arg)
 		if (i == selidx) { focus(c); break; }
 		i++;
 	}
-	if(arg->i > 1 || arg->i < -1) {
+	if (arg->i > 1 || arg->i < -1) {
 		selmon->stickies = numStickies;
 	}
 	arrange(selmon);
@@ -1432,7 +1429,8 @@ inplacerotate(const Arg *arg)
 }
 
 void
-insertclient(Client *item, Client *insertItem, int after) {
+insertclient(Client *item, Client *insertItem, int after)
+{
 	Client *c;
 	if (item == NULL || insertItem == NULL || item == insertItem) return;
 	detach(insertItem);
@@ -1502,7 +1500,7 @@ killforceclient(const Arg *arg)
 	char strpid[15];
 	sprintf(strpid, "%u", selmon->sel->pid);
 	Arg a;
-	char *killcmd[]  = { "/bin/kill", "-9", strpid,  NULL };
+	char *killcmd[] = { "/bin/kill", "-9", strpid, NULL };
 	a.v = killcmd;
 	spawn(&a);
 }
@@ -1545,25 +1543,25 @@ manage(Window w, XWindowAttributes *wa)
 	wc.border_width = c->bw;
 
 	if (c->iscentered) {
-	  // A reset of X and axes is needed in multi-screen setups, especially if
-	  // one of the screens is set as portrait.
-	  c->x = c->mon->wx;
-	  c->y = c->mon->wy;
-	  c->x += (c->mon->ww - WIDTH(c))/2;
-	  c->y += (c->mon->wh - HEIGHT(c))/2;
+		// A reset of X and axes is needed in multi-screen setups, especially if
+		// one of the screens is set as portrait.
+		c->x = c->mon->wx;
+		c->y = c->mon->wy;
+		c->x += (c->mon->ww - WIDTH(c))/2;
+		c->y += (c->mon->wh - HEIGHT(c))/2;
 	}
 
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
 	XSetWindowBorder(dpy, w, scheme[Color9][ColBg].pixel);
 
 	if (c->follow) {
-	  // switch monitor
-	  unfocus(selmon->sel, 0);
-	  selmon = c->mon;
-	  // switch tags
-	  Arg a;
-	  a.i = c->tags;
-	  view(&a);
+		// switch monitor
+		unfocus(selmon->sel, 0);
+		selmon = c->mon;
+		// switch tags
+		Arg a;
+		a.i = c->tags;
+		view(&a);
 	}
 
 	configure(c); /* propagates border_width, if size doesn't change */
@@ -1680,60 +1678,60 @@ movestack(const Arg *arg) {
 	Client *c = NULL, *p = NULL, *pc = NULL, *i;
 	int numStickies = 0;
 
-	if(!selmon->sel)
+	if (!selmon->sel)
 		return;
 
-	if(arg->i > 1 || arg->i < -1) {
+	if (arg->i > 1 || arg->i < -1) {
 		numStickies = selmon->stickies;
 		selmon->stickies = 0;
 		updatesticky(selmon);
 	}
 
-	if(arg->i > 0) {
+	if (arg->i > 0) {
 		/* find the client after selmon->sel */
-		for(c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
-		if(!c)
-			for(c = selmon->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+		for (c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+		if (!c)
+			for (c = selmon->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
 
 	}
 	else {
 		/* find the client before selmon->sel */
-		for(i = selmon->clients; i != selmon->sel; i = i->next)
-			if(ISVISIBLE(i) && !i->isfloating)
+		for (i = selmon->clients; i != selmon->sel; i = i->next)
+			if (ISVISIBLE(i) && !i->isfloating)
 				c = i;
-		if(!c)
-			for(; i; i = i->next)
-				if(ISVISIBLE(i) && !i->isfloating)
+		if (!c)
+			for (; i; i = i->next)
+				if (ISVISIBLE(i) && !i->isfloating)
 					c = i;
 	}
 	/* find the client before selmon->sel and c */
-	for(i = selmon->clients; i && (!p || !pc); i = i->next) {
-		if(i->next == selmon->sel)
+	for (i = selmon->clients; i && (!p || !pc); i = i->next) {
+		if (i->next == selmon->sel)
 			p = i;
-		if(i->next == c)
+		if (i->next == c)
 			pc = i;
 	}
 
 	/* swap c and selmon->sel selmon->clients in the selmon->clients list */
-	if(c && c != selmon->sel) {
+	if (c && c != selmon->sel) {
 		Client *temp = selmon->sel->next==c?selmon->sel:selmon->sel->next;
 		selmon->sel->next = c->next==selmon->sel?c:c->next;
 		c->next = temp;
 
-		if(p && p != c)
+		if (p && p != c)
 			p->next = c;
-		if(pc && pc != selmon->sel)
+		if (pc && pc != selmon->sel)
 			pc->next = selmon->sel;
 
-		if(selmon->sel == selmon->clients)
+		if (selmon->sel == selmon->clients)
 			selmon->clients = c;
-		else if(c == selmon->clients)
+		else if (c == selmon->clients)
 			selmon->clients = selmon->sel;
 
 		arrange(selmon);
 	}
 
-	if(arg->i > 1 || arg->i < -1) {
+	if (arg->i > 1 || arg->i < -1) {
 		selmon->stickies = numStickies;
 		arrange(selmon);
 	}
@@ -1928,7 +1926,7 @@ rotatestack(const Arg *arg)
 		return;
 	f = selmon->sel;
 
-	if(arg->i > 1 || arg->i < -1) {
+	if (arg->i > 1 || arg->i < -1) {
 		numStickies = selmon->stickies;
 		selmon->stickies = 0;
 		updatesticky(selmon);
@@ -1950,7 +1948,7 @@ rotatestack(const Arg *arg)
 		}
 	}
 	if (c) {
-		if(arg->i > 1 || arg->i < -1) {
+		if (arg->i > 1 || arg->i < -1) {
 			selmon->stickies = numStickies;
 		}
 		arrange(selmon);
@@ -2011,7 +2009,7 @@ sendmon(Client *c, Monitor *m)
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	// Reset sticky clients when switching between monitors to keep the layout
 	// consistent for the target monitor.
-	for(i=0; i < LENGTH(c->pertag->issticky); i++)
+	for (i=0; i < LENGTH(c->pertag->issticky); i++)
 		c->pertag->issticky[i] = 0;
 	attach(c);
 	attachstack(c);
@@ -2072,7 +2070,7 @@ setfullscreen(Client *c, int fullscreen)
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
 			PropModeReplace, (unsigned char*)&netatom[NetWMFullscreen], 1);
 		c->isfullscreen = 1;
-	} else if (!fullscreen && c->isfullscreen){
+	} else if (!fullscreen && c->isfullscreen) {
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
 			PropModeReplace, (unsigned char*)0, 0);
 		c->isfullscreen = 0;
@@ -2122,7 +2120,7 @@ setmfacts(const Arg *arg)
 		return;
 
 	for (i=0; i < LENGTH(tags) + 1; i++) {
-	  selmon->pertag->mfacts[i] = f;
+		selmon->pertag->mfacts[i] = f;
 	}
 	selmon->mfact = f;
 	arrange(selmon);
@@ -2134,7 +2132,7 @@ setnmasters(const Arg *arg)
 	int i;
 	int v = MAX(arg->i, 0);
 	for (i=0; i < LENGTH(tags) + 1; i++) {
-	  selmon->pertag->nmasters[i] = v;
+		selmon->pertag->nmasters[i] = v;
 	}
 	selmon->nmaster = v;
 	arrange(selmon);
@@ -2289,7 +2287,7 @@ stickyClient(const Arg *arg)
 	} else {
 	count += arg->i;
 	if (count < 0)
-	  count = 0;
+		count = 0;
 	}
 	selmon->stickies = count;
 	updatesticky(selmon);
@@ -2318,7 +2316,7 @@ void
 tocenter(const Arg *arg)
 {
 	if (!selmon->sel || !selmon->sel->isfloating)
-	  return;
+		return;
 
 	// Move to center of the selected monitor
 	selmon->sel->x = selmon->wx;
@@ -2624,9 +2622,9 @@ void
 updatelast(Monitor *m)
 {
 	Client *c, *last;
-	for(last = nexttiled(m->clients); last && last->next; last = nexttiled(last->next));
-	for(c = nexttiled(m->clients); c && c->next && c != last; c = nexttiled(c->next)){
-		if(ISLAST(c)){
+	for (last = nexttiled(m->clients); last && last->next; last = nexttiled(last->next));
+	for (c = nexttiled(m->clients); c && c->next && c != last; c = nexttiled(c->next)) {
+		if (ISLAST(c)) {
 			detach(c);
 			c->next = last->next;
 			last->next = c;
@@ -2714,7 +2712,7 @@ updatestatus(void)
 	pure[i] = '\0';
 	stextw = TEXTW(pure) - lrpad;
 
-	if(unhiden_statusbar){
+	if (unhiden_statusbar) {
 		drawbars();
 	}else{
 		drawbar(selmon);
@@ -2782,7 +2780,7 @@ updatetitle(Client *c)
 void
 updatewindowPID(Client *c)
 {
-	if(!c)
+	if (!c)
 		return;
 
 	Atom pid = getcardinalprop(c, netatom[NetWMPID]);
@@ -2954,7 +2952,7 @@ zoom(const Arg *arg)
 
 	// If we brought the second tiled client, then it makes sense to keep the
 	// focus on the first one.
-	if(old != c){
+	if (old != c) {
 		focus(old);
 	}
 
@@ -2964,24 +2962,24 @@ zoom(const Arg *arg)
 void
 toggleskip(const Arg *arg)
 {
-  if (selmon->sel != NULL) {
-	selmon->sel->skip ^= 1;
-	drawbar(selmon);
-  }
+	if (selmon->sel != NULL) {
+		selmon->sel->skip ^= 1;
+		drawbar(selmon);
+	}
 }
 
 
 void
 unskipall(const Arg *arg)
 {
-  if (selmon != NULL) {
-	Client *c;
-	for(c = selmon->clients; c; c = c->next) {
-		if(ISVISIBLE(c) && c->skip)
-			c->skip = 0;
+	if (selmon != NULL) {
+		Client *c;
+		for (c = selmon->clients; c; c = c->next) {
+			if (ISVISIBLE(c) && c->skip)
+				c->skip = 0;
+		}
 	}
-  }
-  drawbar(selmon);
+	drawbar(selmon);
 }
 
 int

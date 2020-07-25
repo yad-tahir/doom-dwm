@@ -47,124 +47,127 @@ monocle(Monitor *m)
 
 Bool isPortrait(Monitor *m)
 {
-  return m->mw < m->mh;
+	return m->mw < m->mh;
 }
 
 void
 fibonacci(Monitor *m, int s)
 {
-  unsigned int i, // current client index
+	unsigned int i, // current client index
 	n, // number of tiled win
 	h, w, x, y,
 	mw, mh; // master area
-  Client *c;
+	Client *c;
 
-  // Calculate the number of tiled clients
-  for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+	// Calculate the number of tiled clients
+	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 
-  if (n == 0)
-	return;
+	if (n == 0)
+		return;
 
-  if (n > m->nmaster) {
-	mw = m->nmaster ? m->ww * m->mfact : 0;
-	mh = m->nmaster ? m->wh * m->mfact : 0;
-  } else {
-	// when there are no masters
-	mw = m->ww;
-	mh = m->wh;
-  }
-  x = y = h = w = 0;
-
-  for(i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
-	if (i < m->nmaster) {
-	  // Check if the sceen is in portrait mode
-	  if (! isPortrait(m)) {
-		w = (mw - x) / (MIN(n, m->nmaster)-i);
-		resize(c, x + m->wx, m->wy, w - (2*c->bw), m->wh - (2*c->bw), False);
-		x += WIDTH(c);
-	  } else{
-		h = (mh - y) / (MIN(n, m->nmaster)-i);
-		resize(c, m->wx, y + m->wy, m->ww - (2*c->bw), h - (2*c->bw), False);
-		y += HEIGHT(c);
-	  }
+	if (n > m->nmaster) {
+		mw = m->nmaster ? m->ww * m->mfact : 0;
+		mh = m->nmaster ? m->wh * m->mfact : 0;
 	} else {
-	  // The var j is introduced so that the number of masters does not affect
-	  // slaves are drawn
-	  int j =  i - m->nmaster;
-
-	  // Calculate the remaining dimension for the slaves
-	  if (j == 0) {
-		w = m->ww - x;
-		h = m->wh - y;
-	  }
-	  // If there is enough space
-	  if ((j % 2 && w / 2 > 2 * c->bw)
-		 || (!(j % 2) && h / 2 > 2 * c->bw)) {
-		// Avoid dividing so that the last client takes all the remaining area
-		if (i < n-1) {
-		  // update Size
-		  if (!isPortrait(m)) {
-			if (j % 2) w /= 2;
-			else h /= 2;
-
-			if (!s) {
-			  if (j % 4 == 1) x +=w;
-			  if (j % 4 == 2) y +=h;
-			}
-		  } else {
-			if (j % 2) h /= 2;
-			else w /= 2;
-
-			if (!s) {
-				if (j % 4 == 1 && 1) y +=h;
-				if (j % 4 == 2 && 1) x +=w;
-			}
-		  }
-		}
-
-		resize(c, m->wx + x, m->wy + y, w - (2*c->bw), h - (2*c->bw), False);
-
-		// Adjust the location for the next client
-		if (!isPortrait(m)) {
-		  if (s) {
-			if (j % 4 == 0) y += h;
-			if (j % 4 == 1) x += w;
-			if (j % 4 == 2) y += h;
-			if (j % 4 == 3) x += w;
-		  } else {
-			if (j % 4 == 0) y += h;
-			if (j % 4 == 1) x -= w;
-			if (j % 4 == 2) y -= h;
-			if (j % 4 == 3) x += w;
-		  }
-		} else {
-		  if (s) {
-			if (j % 4 == 0) x += w;
-			if (j % 4 == 1) y += h;
-			if (j % 4 == 2) x += w;
-			if (j % 4 == 3) y += h;
-		  } else {
-			if (j % 4 == 0) x += w;
-			if (j % 4 == 1) y -= h;
-			if (j % 4 == 2) x -= w;
-			if (j % 4 == 3) y += h;
-		  }
-		}
-	  }
+		// when there are no masters
+		mw = m->ww;
+		mh = m->wh;
 	}
-  }
+	x = y = h = w = 0;
+
+	for (i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+		if (i < m->nmaster) {
+			// Check if the sceen is in portrait mode
+			if (! isPortrait(m)) {
+				w = (mw - x) / (MIN(n, m->nmaster)-i);
+				resize(c, x + m->wx, m->wy,
+					   w - (2*c->bw), m->wh - (2*c->bw), False);
+				x += WIDTH(c);
+			} else{
+				h = (mh - y) / (MIN(n, m->nmaster)-i);
+				resize(c, m->wx, y + m->wy,
+					   m->ww - (2*c->bw), h - (2*c->bw), False);
+				y += HEIGHT(c);
+			}
+		} else {
+			// The var j is introduced so that the number of masters does not
+			// affect slaves are drawn
+			int j = i - m->nmaster;
+
+			// Calculate the remaining dimension for the slaves
+			if (j == 0) {
+				w = m->ww - x;
+				h = m->wh - y;
+			}
+			// If there is enough space
+			if ((j % 2 && w / 2 > 2 * c->bw)
+				|| (!(j % 2) && h / 2 > 2 * c->bw)) {
+				// Avoid dividing so that the last client takes all the
+				// remaining area
+				if (i < n-1) {
+					// update Size
+					if (!isPortrait(m)) {
+						if (j % 2) w /= 2;
+						else h /= 2;
+
+						if (!s) {
+							if (j % 4 == 1) x +=w;
+							if (j % 4 == 2) y +=h;
+						}
+					} else {
+						if (j % 2) h /= 2;
+						else w /= 2;
+
+						if (!s) {
+							if (j % 4 == 1 && 1) y +=h;
+							if (j % 4 == 2 && 1) x +=w;
+						}
+					}
+				}
+
+				resize(c, m->wx + x, m->wy + y, w - (2*c->bw), h - (2*c->bw), False);
+
+				// Adjust the location for the next client
+				if (!isPortrait(m)) {
+					if (s) {
+						if (j % 4 == 0) y += h;
+						if (j % 4 == 1) x += w;
+						if (j % 4 == 2) y += h;
+						if (j % 4 == 3) x += w;
+					} else {
+						if (j % 4 == 0) y += h;
+						if (j % 4 == 1) x -= w;
+						if (j % 4 == 2) y -= h;
+						if (j % 4 == 3) x += w;
+					}
+				} else {
+					if (s) {
+						if (j % 4 == 0) x += w;
+						if (j % 4 == 1) y += h;
+						if (j % 4 == 2) x += w;
+						if (j % 4 == 3) y += h;
+					} else {
+						if (j % 4 == 0) x += w;
+						if (j % 4 == 1) y -= h;
+						if (j % 4 == 2) x -= w;
+						if (j % 4 == 3) y += h;
+					}
+				}
+			}
+		}
+	}
 }
 
 void
 dwindle(Monitor *mon)
 {
-  fibonacci(mon, 1);
+	fibonacci(mon, 1);
 }
 
 void
 spiral(Monitor *mon)
 {
-  fibonacci(mon, 0);
+	fibonacci(mon, 0);
 }
 
 void
@@ -199,27 +202,29 @@ grid (Monitor *m)
 void
 col(Monitor *m)
 {
-  unsigned int i, n, h, w, x, y,mw;
-  Client *c;
+	unsigned int i, n, h, w, x, y,mw;
+	Client *c;
 
-  for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-  if (n == 0)
-	return;
-  if (n > m->nmaster)
-	mw = m->nmaster ? m->ww * m->mfact : 0;
-  else
-	mw = m->ww;
-  for (i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
-	if (i < m->nmaster) {
-	  w = (mw - x) / (MIN(n, m->nmaster)-i);
-	  resize(c, x + m->wx, m->wy, w - (2*c->bw), m->wh - (2*c->bw), False);
-	  x += WIDTH(c);
-	} else {
-	  h = (m->wh - y) / (n - i);
-	  resize(c, x + m->wx, m->wy + y, m->ww - x  - (2*c->bw), h - (2*c->bw), False);
-	  y += HEIGHT(c);
+	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+	if (n == 0)
+		return;
+	if (n > m->nmaster)
+		mw = m->nmaster ? m->ww * m->mfact : 0;
+	else
+		mw = m->ww;
+	for (i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+		if (i < m->nmaster) {
+			w = (mw - x) / (MIN(n, m->nmaster)-i);
+			resize(c, x + m->wx, m->wy,
+				   w - (2*c->bw), m->wh - (2*c->bw), False);
+			x += WIDTH(c);
+		} else {
+			h = (m->wh - y) / (n - i);
+			resize(c, x + m->wx, m->wy + y,
+				   m->ww - x - (2*c->bw), h - (2*c->bw), False);
+			y += HEIGHT(c);
+		}
 	}
-  }
 }
 
 void
