@@ -110,18 +110,14 @@ fibonacci(Monitor *m, int s)
 						if (j % 2) w /= 2;
 						else h /= 2;
 
-						if (!s) {
-							if (j % 4 == 1) x +=w;
-							if (j % 4 == 2) y +=h;
-						}
+						if (j % 4 == 1 && !s) x +=w;
+						if (j % 4 == 2 && !s) y +=h;
 					} else {
 						if (j % 2) h /= 2;
 						else w /= 2;
 
-						if (!s) {
-							if (j % 4 == 1 && 1) y +=h;
-							if (j % 4 == 2 && 1) x +=w;
-						}
+						if (j % 4 == 1 && !s) y +=h;
+						if (j % 4 == 2 && !s) x +=w;
 					}
 				}
 
