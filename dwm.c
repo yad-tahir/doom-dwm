@@ -979,53 +979,54 @@ drawbar(Monitor *m)
 		// Check if there is a need to have a progress indicator. We do that by
 		// checking whether is a percentage expression, e.g. 55%, in the title.
 		regmatch_t matches[2];
-		const char * p = m->sel->name;
-		if (regexec(&regex, p, 1, matches, 0)) {
+		if (regexec(&regex, m->sel->name, 1, matches, 0)) {
 			// Disable Scheme select as we already implemented in tags
 			drw_setscheme(drw, scheme[Color0]);
-			w = TEXTW(p);
-			drw_text(drw, x, 0, w, bh, lrpad / 2, p, 0);
+			w = TEXTW(m->sel->name);
+			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
 		} else {
 			// Draw a progress indicator by highlighting characters in the title
 			// Add space padding
-			char title[strlen(p)+3];
+			char title[strlen(m->sel->name)+3];
 			memset(title,'\0', sizeof(title));
-			memcpy(title+1, p, strlen(p));
-			title[0] = title[strlen(p)+1] =' ';
-			p = title;
+			memcpy(title+1, m->sel->name, strlen(m->sel->name));
+			title[0] = title[strlen(m->sel->name)+1] =' ';
 
 			//Get the percentage, which has the following expression [[:digit]]{1,3}%
 			char tmp[sizeof(title)];
-			for (i=(strlen(p)-1); i>=0; i--)
-				if (p[i]=='%') break;
+			for (i=(strlen(title)-1); i>=0; i--)
+				if (title[i]=='%')
+					break;
 			int pos1 = i;
 			// Find the last space after %
 			for (i=pos1; i>=0; i--)
-			if (p[i]==' ') break;
+				if (title[i]==' ')
+					break;
 			int pos2 = i;
 			memset(tmp,'\0', sizeof(tmp));
-			memcpy(tmp, p+pos2, pos1-pos2);
+			memcpy(tmp, title+pos2,
+				   pos1-pos2 > sizeof(tmp)-1 ? sizeof(tmp)-1: pos1-pos2);
 			float per= atoi(tmp) * 0.01;
 
 			// From the percentage, find how many characters needs to be highlighted
-			int numChar= (strlen(p)) * per;
+			int numChar= (strlen(title)) * per;
 
 			//Start drawing
-			if (numChar>0) {
+			memset(tmp,'\0',sizeof(tmp));
+			memcpy(tmp, title, sizeof(title));
+			w = TEXTW(tmp)- lrpad;
+			drw_setscheme(drw, scheme[Color0]);
+			int end = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
+
+			if (numChar>0 && numChar <= strlen(title)) {
 				// Highlighted part
 				drw_setscheme(drw, scheme[Color1]);
 				memset(tmp,'\0',sizeof(tmp));
-				memcpy(tmp, p, numChar);
+				memcpy(tmp, title, numChar);
 				w = TEXTW(tmp)- lrpad;
 				x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
 			}
-
-			// Draw Non-highlighted part
-			drw_setscheme(drw, scheme[Color0]);
-			memset(tmp,'\0',sizeof(tmp));
-			memcpy(tmp, p+numChar, strlen(p)-numChar);
-			w = TEXTW(tmp)-lrpad;
-			x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
+			x = end;
 		}
 	} else {
 		drw_setscheme(drw, scheme[Color0]);
