@@ -2311,7 +2311,7 @@ tagmon(const Arg *arg)
 void
 tocenter(const Arg *arg)
 {
-	if (!selmon->sel || !selmon->sel->isfloating)
+	if (!selmon->sel)
 		return;
 
 	// Move to center of the selected monitor
