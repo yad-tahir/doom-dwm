@@ -30,7 +30,7 @@ static const char *colors[][2]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "", "", "", "", "", "" };
+static const char *tags[] = { "", "", "", "", "" , "", "", "", "" };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -42,7 +42,7 @@ static const Rule rules[] = {
 	{ "URxvt",    "log",         NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
 	{ "URxvt",    "visualizer",  NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
 	{ "URxvt",    "pulsemixer",  NULL, 0,        1,         0,       0,     1,         0,   0,    -1 },
-	{ "Zathura",  NULL,          NULL, 1 << 4,   0,         0,       1,     0,         0,   0,     1 },
+	{ "Zathura",  NULL,          NULL, 1 << 5,   0,         0,       1,     0,         0,   0,     1 },
 };
 
 /* layout(s) */
@@ -132,6 +132,9 @@ static Key keys[] = {
 	TAGKEYS(                        XK_4,                           3)
 	TAGKEYS(                        XK_5,                           4)
 	TAGKEYS(                        XK_6,                           5)
+	TAGKEYS(                        XK_7,                           6)
+	TAGKEYS(                        XK_8,                           7)
+	TAGKEYS(                        XK_9,                           8)
 
 	{ MODKEY,                       XK_q,      killclient,          {0} },
 	{ MODKEY|ShiftMask,             XK_q,      killforceclient,     {0} },
