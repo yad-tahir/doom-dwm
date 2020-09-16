@@ -469,8 +469,8 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	updatelast(m);
 	updatesticky(m);
+	updatelast(m);
 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
 	if (m->lt[m->sellt]->arrange)
 		m->lt[m->sellt]->arrange(m);
@@ -2641,7 +2641,9 @@ void
 updatelast(Monitor *m)
 {
 	Client *c, *last;
-	for (last = nexttiled(m->clients); last && last->next; last = nexttiled(last->next));
+	for (last = c = nexttiled(m->clients); c ; c = nexttiled(c->next))
+			last = c;
+
 	for (c = nexttiled(m->clients); c && c->next && c != last; c = nexttiled(c->next)) {
 		if (ISLAST(c)) {
 			detach(c);
