@@ -38,8 +38,8 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class      instance       title tags mask isfloating islocked follow iscentered skip last  monitor */
-	{ "URxvt",    "htop",        NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
-	{ "URxvt",    "log",         NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
+	{ "URxvt",    "htop",        NULL, 0,        0,         0,       1,     0,         0,   0,    -1 },
+	{ "URxvt",    "log",         NULL, 0,        0,         0,       1,     0,         0,   0,    -1 },
 	{ "URxvt",    "visualizer",  NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
 	{ "URxvt",    "pulsemixer",  NULL, 0,        1,         0,       0,     1,         0,   0,    -1 },
 	{ "Zathura",  NULL,          NULL, 1 << 5,   0,         0,       1,     0,         0,   0,     1 },
