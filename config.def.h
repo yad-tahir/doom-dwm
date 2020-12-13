@@ -138,7 +138,7 @@ static Key keys[] = {
 
 	{ MODKEY,                       XK_q,      killclient,          {0} },
 	{ MODKEY|ShiftMask,             XK_q,      killforceclient,     {0} },
-	{ MODKEY|ShiftMask,             XK_F3,     quit,                {0} },
+	{ MODKEY|ControlMask,           XK_Delete, quit,                {0} },
 };
 
 /* button definitions */
