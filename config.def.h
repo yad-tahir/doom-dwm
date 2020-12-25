@@ -9,7 +9,9 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const unsigned int barheight = 30;       /* status bar height */
 static const char *fonts[]          = { "DejaVu Sans Mono:size=12",
-										"FontAwesome:size=12" };
+										"Font Awesome 5 Brands:size=11",
+										"Font Awesome 5 Free Regular:size=11",
+										"Font Awesome 5 Free Solid:size=11"};
 static const int stackbar_width     = 10;      /* width of stackbar blocks */
 static const int stackbar_padding   = 2;       /* padding for stackbar blocks */
 static const int focusonwheel       = 1;
@@ -40,9 +42,8 @@ static const Rule rules[] = {
 	/* class      instance       title tags mask isfloating islocked follow iscentered skip last  monitor */
 	{ "URxvt",    "htop",        NULL, 0,        0,         0,       1,     0,         0,   0,    -1 },
 	{ "URxvt",    "log",         NULL, 0,        0,         0,       1,     0,         0,   0,    -1 },
-	{ "URxvt",    "visualizer",  NULL, 1 << 1,   0,         0,       1,     0,         0,   0,     1 },
 	{ "URxvt",    "pulsemixer",  NULL, 0,        1,         0,       0,     1,         0,   0,    -1 },
-	{ "Zathura",  NULL,          NULL, 1 << 5,   0,         0,       1,     0,         0,   0,     1 },
+	{ "Zathura",  NULL,          NULL, 1 << 4,   0,         0,       1,     0,         0,   0,     1 },
 };
 
 /* layout(s) */
