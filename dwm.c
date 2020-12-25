@@ -904,10 +904,10 @@ drawbar(Monitor *m)
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c)) continue;
 				if (m->sel == c) scm = Color1;
-				else if (HIDDEN(c)) scm = Color4;
-				else if (ISSKIP(c)) scm = Color4;
+				else if (HIDDEN(c)) scm = Color5;
+				else if (ISSKIP(c)) scm = Color5;
 				else if (ISSTICKY(c)) scm = Color3;
-				else scm = Color6;
+				else scm = Color9;
 				drw_setscheme(drw, scheme[scm]);
 				x = drw_text(drw, x, (bh - drw->fonts->h) / 2,
 							 w, drw->fonts->h, lrpad / 2, " ", 0);
