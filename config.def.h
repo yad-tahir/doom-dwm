@@ -116,6 +116,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_b,      rotatestack,         {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_b,      rotatestack,         {.i = +2 } },
 	{ MODKEY,                       XK_Return, cyclelayout,         {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_Return, cyclelayout,         {.i = -1 } },
 	{ MODKEY,                       XK_space,  togglefloating,      {0} },
 	{ MODKEY,                       XK_f,      stickyClient,        {.i = +1} },
 	{ MODKEY|ShiftMask,             XK_f,      stickyClient,        {.i = -1} },
