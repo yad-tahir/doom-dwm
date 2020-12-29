@@ -844,7 +844,7 @@ drawbar(Monitor *m)
 			ctmp = *ts;
 			*ts = '\0';
 			drw_text(drw, m->ww - tw + tx, 0, tw - tx, bh, 0, tp, 0);
-			tx += TEXTW(tp)-lrpad;
+			tx += TEXTW(tp) - lrpad;
 			if (ctmp == '\0') { break; }
 			drw_setscheme(drw, scheme[(unsigned int)(ctmp-1)]);
 			*ts = ctmp;
@@ -887,7 +887,7 @@ drawbar(Monitor *m)
 	x -= lrpad / 2;
 	char str[11];
 	sprintf(str, "%d", m->nmaster);
-	w = TEXTW(str)-lrpad/2;
+	w = TEXTW(str)- lrpad / 2;
 	drw_setscheme(drw, scheme[scm]);
 	x = drw_text(drw, x, 0, w, bh, 0, str, 0);
 
@@ -896,9 +896,10 @@ drawbar(Monitor *m)
 	drw_text(drw, x, 0, m->ww - tw - x , bh, lrpad / 2, " ", 0);
 
 	// Draw stack indicators
+	x -= lrpad / 2;
 	w = stackbar_width;
 	if ((m->ww - tw - x) > bh) {
-		x += lrpad/2;
+		x += lrpad / 2;
 		m->bsx = x;
 		if (n > 0) {
 			for (c = m->clients; c; c = c->next) {
@@ -913,7 +914,7 @@ drawbar(Monitor *m)
 							 w, drw->fonts->h, lrpad / 2, " ", 0);
 				x += stackbar_padding;
 			}
-			x = x - stackbar_padding + lrpad/2;
+			x = x - stackbar_padding + lrpad / 2;
 		} else {
 			drw_setscheme(drw, scheme[Color0]);
 			drw_rect(drw, x, 0, w, bh, 1, 1);
@@ -1012,7 +1013,7 @@ drawbar(Monitor *m)
 			//Start drawing
 			memset(tmp,'\0',sizeof(tmp));
 			memcpy(tmp, title, sizeof(title));
-			w = TEXTW(tmp)- lrpad;
+			w = TEXTW(tmp) - lrpad;
 			drw_setscheme(drw, scheme[Color0]);
 			int end = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
 
@@ -1021,7 +1022,7 @@ drawbar(Monitor *m)
 				drw_setscheme(drw, scheme[Color1]);
 				memset(tmp,'\0',sizeof(tmp));
 				memcpy(tmp, title, numChar);
-				w = TEXTW(tmp)- lrpad;
+				w = TEXTW(tmp) - lrpad;
 				x = drw_text(drw, x, 0, w, bh, 0, tmp, 0);
 			}
 			x = end;
