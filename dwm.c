@@ -927,16 +927,6 @@ drawbar(Monitor *m)
 		return;
 	}
 
-	// Draw PID
-	if ((w = m->ww - tw - x) > bh && m->sel->pid) {
-		char str[15];
-		sprintf(str, "PID:%d", m->sel->pid);
-		w = TEXTW(str);
-		drw_setscheme(drw, scheme[Color2]);
-		x = drw_text(drw, x, 0, TEXTW(str), bh, lrpad / 2, str, 0);
-		x += lrpad/2;
-	}
-
 	// Draw Flags
 	if ((m->ww - tw - x) > bh && ISLOCKED(m->sel)) {
 		w = TEXTW("LOCKED");
