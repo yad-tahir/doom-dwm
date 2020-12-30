@@ -906,7 +906,7 @@ drawbar(Monitor *m)
 				if (!ISVISIBLE(c)) continue;
 				if (m->sel == c) scm = Color1;
 				else if (HIDDEN(c)) scm = Color5;
-				else if (ISSKIP(c)) scm = Color5;
+				else if (ISSKIP(c)) scm = Color4;
 				else if (ISSTICKY(m, c)) scm = Color3;
 				else scm = Color9;
 				drw_setscheme(drw, scheme[scm]);
