@@ -62,7 +62,7 @@
 #define ISLAST(C)               ((C->islast))
 #define ISLOCKED(C)             ((C->islocked))
 #define ISSKIP(C)				((C->skip))
-#define ISSTICKY(C)             ((C->pertag->issticky[selmon->pertag->curtag]))
+#define ISSTICKY(M,C)           ((C->pertag->issticky[M->pertag->curtag]))
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -907,7 +907,7 @@ drawbar(Monitor *m)
 				if (m->sel == c) scm = Color1;
 				else if (HIDDEN(c)) scm = Color5;
 				else if (ISSKIP(c)) scm = Color5;
-				else if (ISSTICKY(c)) scm = Color3;
+				else if (ISSTICKY(m, c)) scm = Color3;
 				else scm = Color9;
 				drw_setscheme(drw, scheme[scm]);
 				x = drw_text(drw, x, (bh - drw->fonts->h) / 2,
@@ -935,7 +935,7 @@ drawbar(Monitor *m)
 		x += lrpad/2;
 	}
 
-	if ((m->ww - tw - x) > bh && ISSTICKY(m->sel)) {
+	if ((m->ww - tw - x) > bh && ISSTICKY(m, m->sel)) {
 		w = TEXTW("STICKY");
 		drw_setscheme(drw, scheme[Color3]);
 		x = drw_text(drw, x, 0, w, bh, lrpad / 2, "STICKY", 0);
@@ -2744,27 +2744,27 @@ updatesticky(Monitor *m)
 
 	// Disable sticky flags on all floating clients
 	for (c = m->clients; c; c = c->next)
-		if ((ISFLOATING(c) || ISLAST(c)) && ISVISIBLE(c) && ISSTICKY(c))
+		if ((ISFLOATING(c) || ISLAST(c)) && ISVISIBLE(c) && ISSTICKY(m, c))
 			c->pertag->issticky[m->pertag->curtag] = 0;
 
 	int num = m->stickies;
 	// Remove old sticky clients that are no longer required!
 	for (i=0, c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
-		if (!ISSTICKY(c))
+		if (!ISSTICKY(m, c))
 			continue;
 		c->pertag->issticky[m->pertag->curtag] = i < num;
 		i++;
 	}
 
 	for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
-		if (ISSTICKY(c))
+		if (ISSTICKY(m, c))
 			laststicky = c;
 
 	// To preserve UI layout, sticky clients should always be at the beginning
 	// of the clients list.
 	for (c = nexttiled(m->clients); c && laststicky && c != laststicky; ) {
 		next = nexttiled(c->next);
-		if (!ISSTICKY(c)) {
+		if (!ISSTICKY(m, c)) {
 			detach(c);
 			// Move it after the last sticky client
 			c->next = laststicky->next;
