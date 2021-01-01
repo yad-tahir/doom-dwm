@@ -875,20 +875,15 @@ drawbar(Monitor *m)
 		x += w;
 	}
 
-	scm=Color2;
-	if (m->nmaster > 1)
-		scm=Color8;
-
+	// Draw layout and nmaster
 	w = blw = TEXTW(m->ltsymbol);
-	drw_setscheme(drw, scheme[scm]);
+	drw_setscheme(drw, scheme[Color8]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
-
-	// Draw nmaster indicator
 	x -= lrpad / 2;
 	char str[11];
 	sprintf(str, "%d", m->nmaster);
 	w = TEXTW(str)- lrpad / 2;
-	drw_setscheme(drw, scheme[scm]);
+	drw_setscheme(drw, scheme[Color8]);
 	x = drw_text(drw, x, 0, w, bh, 0, str, 0);
 
 	//Reset the dynamic portion of the status bar
