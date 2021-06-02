@@ -1171,6 +1171,9 @@ focusstack(const Arg *arg)
 {
 	Client *c = NULL, *i;
 
+	if (!selmon)
+		return;
+
 	// Check whether to avoid skip clients or not. If the passed parameter is
 	// equal to 1 or -1, then jumps over skip clients. Otherwise, act like the
 	// normal focusstack function.
