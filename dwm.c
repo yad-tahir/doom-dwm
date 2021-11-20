@@ -1534,6 +1534,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->y = c->mon->wy;
 		c->x += (c->mon->ww - WIDTH(c))/2;
 		c->y += (c->mon->wh - HEIGHT(c))/2;
+		c->isfloating = 1;
 	}
 
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
