@@ -1559,8 +1559,14 @@ manage(Window w, XWindowAttributes *wa)
 	grabbuttons(c, 0);
 	if (!ISFLOATING(c))
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
-	if (ISFLOATING(c))
+	if (ISFLOATING(c)) {
+		// Floating window should appear in the center initially. Their locations may change with window move events.
+		c->x = c->mon->wx;
+		c->y = c->mon->wy;
+		c->x += (c->mon->ww - WIDTH(c))/2;
+		c->y += (c->mon->wh - HEIGHT(c))/2;
 		XRaiseWindow(dpy, c->win);
+	}
 	attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
@@ -2314,6 +2320,9 @@ tocenter(const Arg *arg)
 {
 	if (!selmon->sel)
 		return;
+
+	// Make it float
+	selmon->sel->isfloating = 1;
 
 	// Move to center of the selected monitor
 	selmon->sel->x = selmon->wx;
