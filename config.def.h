@@ -32,7 +32,7 @@ static const char *colors[][2]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "", "", "", "" , "", "", ""};
+static const char *tags[] = { "", "", "", "" , "", "", "", "", ""};
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -135,6 +135,8 @@ static Key keys[] = {
 	TAGKEYS(                        XK_5,                           4)
 	TAGKEYS(                        XK_6,                           5)
 	TAGKEYS(                        XK_7,                           6)
+	TAGKEYS(                        XK_8,                           7)
+	TAGKEYS(                        XK_9,                           8)
 
 	{ MODKEY,                       XK_q,      killclient,          {0} },
 	{ MODKEY|ShiftMask,             XK_q,      killforceclient,     {0} },
