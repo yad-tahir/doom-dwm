@@ -55,12 +55,8 @@ static const int resizehints = 0;    /* 1 means respect size hints in tiled resi
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[@]",      spiral }, /* first entry is default */
-	{ "[=]",      tile },
 	{ "[F]",      monocle },
-	{ "MM|",      col },
-	{ "|M|",      centeredmaster },
 	{ "[\\]",     dwindle },
-	{ ">M>",      centeredfloatingmaster },
 	{ "[+]",      grid },
 	{ "><>",      NULL },    /* no layout function means floating behavior */
 };
