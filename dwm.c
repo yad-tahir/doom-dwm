@@ -418,6 +418,17 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 		*h = bh;
 	if (*w < bh)
 		*w = bh;
+
+	// If the tiled window's dimensions exceeds the monitor working area,
+	// then resize it to fit
+	if(!ISFLOATING(c) && ISVISIBLE(c) && !HIDDEN(c)){
+		if(*x + *w + 2*c->bw > c->mon->wx + c->mon->ww)
+			*w = c->mon->wx + c->mon->ww - *x - 2*c->bw;
+		if(*y + *h + 2*c->bw > c->mon->wy + c->mon->wh)
+			*h = c->mon->wy + c->mon->wh - *y - 2*c->bw;
+	}
+
+
 	if (resizehints || ISFLOATING(c) || !c->mon->lt[c->mon->sellt]->arrange) {
 		/* see last two sentences in ICCCM 4.1.2.3 */
 		baseismin = c->basew == c->minw && c->baseh == c->minh;
@@ -529,8 +540,10 @@ buttonpress(XEvent *e)
 			}
 		}
 	} else if ((c = wintoclient(ev->window))) {
-		if (focusonwheel || (ev->button != Button4 && ev->button != Button5))
+		if (focusonwheel || (ev->button != Button4 && ev->button != Button5)){
 			focus(c);
+			restack(selmon);
+		}
 		click = ClkClientWin;
 	}
 

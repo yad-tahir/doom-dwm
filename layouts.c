@@ -11,6 +11,7 @@ tile(Monitor *m)
 	Client *c;
 
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+
 	if (n == 0)
 		return;
 
@@ -75,21 +76,22 @@ fibonacci(Monitor *m, int s)
 		mw = m->ww;
 		mh = m->wh;
 	}
-	x = y = h = w = 0;
 
-	for (i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+
+	int overlap = nexttiled(m->clients)->bw;
+	for (i = x = y = h = w = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
 		if (i < m->nmaster) {
 			// Check if the sceen is in portrait mode
-			if (! isPortrait(m)) {
+			if (!isPortrait(m)) {
 				w = (mw - x) / (MIN(n, m->nmaster)-i);
 				resize(c, x + m->wx, m->wy,
-					   w - (2*c->bw), m->wh - (2*c->bw), False);
-				x += WIDTH(c);
+					   w - (2*c->bw) + overlap, m->wh - (2*c->bw), False);
+				x += WIDTH(c) - overlap;
 			} else{
 				h = (mh - y) / (MIN(n, m->nmaster)-i);
 				resize(c, m->wx, y + m->wy,
-					   m->ww - (2*c->bw), h - (2*c->bw), False);
-				y += HEIGHT(c);
+					   m->ww - (2*c->bw), h - (2*c->bw) + overlap, False);
+				y += HEIGHT(c) - overlap;
 			}
 		} else {
 			// The var j is introduced so that the number of masters does not
@@ -123,7 +125,8 @@ fibonacci(Monitor *m, int s)
 					}
 				}
 
-				resize(c, m->wx + x, m->wy + y, w - (2*c->bw), h - (2*c->bw), False);
+				resize(c, m->wx + x, m->wy + y,
+					   w - (2*c->bw) + overlap, h - (2*c->bw) + overlap, False);
 
 				// Adjust the location for the next client
 				if (!isPortrait(m)) {
@@ -177,6 +180,9 @@ grid (Monitor *m)
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next))
 		n++;
 
+	if (n == 0)
+		return;
+
 	/* grid dimensions */
 	for (rows = 0; rows <= n/2; rows++)
 		if (rows*rows >= n)
@@ -186,13 +192,15 @@ grid (Monitor *m)
 	/* window geoms (cell height/width) */
 	ch = m->wh / (rows ? rows : 1);
 	cw = m->ww / (cols ? cols : 1);
+
+	int overlap = nexttiled(m->clients)->bw;
 	for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
 		cx = m->wx + (i / rows) * cw;
 		cy = m->wy + (i % rows) * ch;
 		/* adjust height/width of last row/column's windows */
 		ah = ((i + 1) % rows == 0) ? m->wh - ch * rows : 0;
 		aw = (i >= rows * (cols - 1)) ? m->ww - cw * cols : 0;
-		resize(c, cx, cy, cw - 2 * c->bw + aw, ch - 2 * c->bw + ah, False);
+		resize(c, cx, cy, cw - (2*c->bw) + overlap + aw, ch - (2*c->bw) + overlap + ah, False);
 		i++;
 	}
 }
