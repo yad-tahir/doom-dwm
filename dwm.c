@@ -473,8 +473,10 @@ arrange(Monitor *m)
 	if (m) {
 		arrangemon(m);
 		restack(m);
-	} else for (m = mons; m; m = m->next)
-		arrangemon(m);
+	} else {
+		for (m = mons; m; m = m->next)
+			arrangemon(m);
+	}
 }
 
 void
@@ -837,10 +839,17 @@ void
 drawbar(Monitor *m)
 {
 	int x = 0, w = 0, tw = 0, n = 0, scm;
-	int boxs = drw->fonts->h / 9;
-	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
+
+	if (!m)
+		return;
+
+	if (!drw)
+		return;
+
+	int boxs = drw->fonts->h / 9;
+	int boxw = drw->fonts->h / 6 + 2;
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon || unhiden_statusbar) {
@@ -1947,7 +1956,6 @@ rotatestack(const Arg *arg)
 			selmon->stickies = numStickies;
 		}
 		arrange(selmon);
-		//unfocus(f, 1);
 		focus(f);
 	}
 }
