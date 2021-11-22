@@ -542,7 +542,6 @@ buttonpress(XEvent *e)
 	} else if ((c = wintoclient(ev->window))) {
 		if (focusonwheel || (ev->button != Button4 && ev->button != Button5)){
 			focus(c);
-			restack(selmon);
 		}
 		click = ClkClientWin;
 	}
@@ -1146,6 +1145,7 @@ focus(Client *c)
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
 	}
 	selmon->sel = c;
+	restack(selmon);
 	drawbars();
 }
 
@@ -1207,7 +1207,6 @@ focusstack(const Arg *arg)
 	}
 	if (c) {
 		focus(c);
-		restack(selmon);
 	}
 }
 
@@ -1889,9 +1888,14 @@ restack(Monitor *m)
 	XEvent ev;
 	XWindowChanges wc;
 
+	if(!m)
+		return;
+
 	drawbar(m);
+
 	if (!m->sel)
 		return;
+
 	if (ISFLOATING(m->sel) || !m->lt[m->sellt]->arrange)
 		XRaiseWindow(dpy, m->sel->win);
 	if (m->lt[m->sellt]->arrange) {
@@ -1945,7 +1949,6 @@ rotatestack(const Arg *arg)
 		arrange(selmon);
 		//unfocus(f, 1);
 		focus(f);
-		restack(selmon);
 	}
 }
 
@@ -2448,7 +2451,6 @@ togglewin(const Arg *arg)
 		if (HIDDEN(c))
 			show(c);
 		focus(c);
-		restack(selmon);
 	}
 }
 
