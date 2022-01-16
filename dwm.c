@@ -845,11 +845,15 @@ drawbar(Monitor *m)
 	if (!m)
 		return;
 
+	if (!m->showbar)
+		return;
+
 	if (!drw)
 		return;
 
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
+
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon || unhiden_statusbar) {
@@ -1193,7 +1197,7 @@ focusstack(const Arg *arg)
 {
 	Client *c = NULL, *i;
 
-	if (!selmon)
+	if (!selmon->sel || (selmon->sel->isfullscreen && lockfullscreen))
 		return;
 
 	// Check whether to avoid skip clients or not. If the passed parameter is
