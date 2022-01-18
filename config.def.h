@@ -19,14 +19,14 @@ static const int unhiden_statusbar  = 1;       /*  shows status bar on all monit
 static const char *colors[][2]      = {
 	/*             fg         bg       */
 	[Color0]  = { "#e6beae", "#000000" },
-	[Color1]  = { "#ffffff", "rgb:fff/000/fff" },
+	[Color1]  = { "#000000", "rgb:fff/000/fff" },
 	[Color2]  = { "#654d4d", "#000000" },
-	[Color3]  = { "#000000", "#3ee2b4" },
+	[Color3]  = { "#000000", "#00ffff" },
 	[Color4]  = { "#000000", "#ffa500" },
 	[Color5]  = { "#000000", "#ff6347" },
 	[Color6]  = { "#e6beae", "#392626" },
 	[Color7]  = { "#000000", "#a7e23e" },
-	[Color8]  = { "#6fd8ff", "#000000" },
+	[Color8]  = { "#00ffff", "#000000" },
 	[Color9]  = { "#ffffff", "#292121" },
 	[Color10] = { "#000000", "#e6beae" },
 
