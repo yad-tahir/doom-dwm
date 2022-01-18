@@ -2337,7 +2337,11 @@ tocenter(const Arg *arg)
 		return;
 
 	// Make it float
-	selmon->sel->isfloating = 1;
+	if (!selmon->sel->isfloating){
+		selmon->sel->isfloating = 1;
+		arrange(NULL);
+	}
+
 
 	// Move to center of the selected monitor
 	selmon->sel->x = selmon->wx;
