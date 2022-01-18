@@ -69,7 +69,7 @@ enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
 // The order of the colors must match the order of their use in config.def.h.
 // Otherwise, it will break the coloring of the status part
 enum { Color0, Color1, Color2, Color3, Color4, Color5,
-	   Color6, Color7, Color8, Color9, Color10}; /* color schemes */
+	   Color6, Color7, Color8, Color9, Color10, Color11}; /* color schemes */
 enum { NetSupported, NetWMName, NetWMPID, NetWMState, NetWMCheck,
 	   NetWMFullscreen, NetActiveWindow, NetWMWindowType,
 	   NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -1151,7 +1151,7 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
-		XSetWindowBorder(dpy, c->win, scheme[Color1][ColBg].pixel);
+		XSetWindowBorder(dpy, c->win, scheme[Color11][ColFg].pixel);
 		setfocus(c);
 	} else {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
@@ -1550,7 +1550,7 @@ manage(Window w, XWindowAttributes *wa)
 	}
 
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
-	XSetWindowBorder(dpy, w, scheme[Color9][ColBg].pixel);
+	XSetWindowBorder(dpy, w, scheme[Color11][ColBg].pixel);
 
 	if (c->follow) {
 		// switch monitor
@@ -2472,7 +2472,8 @@ unfocus(Client *c, int setfocus)
 	if (!c)
 		return;
 	grabbuttons(c, 0);
-	XSetWindowBorder(dpy, c->win, scheme[Color9][ColBg].pixel);
+	XSetWindowBorder(dpy, c->win, scheme[Color11][ColBg].pixel);
+
 	if (setfocus) {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);

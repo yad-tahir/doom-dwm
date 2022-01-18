@@ -19,7 +19,7 @@ static const int unhiden_statusbar  = 1;       /*  shows status bar on all monit
 static const char *colors[][2]      = {
 	/*             fg         bg       */
 	[Color0]  = { "#e6beae", "#000000" },
-	[Color1]  = { "#ffffff", "#7818b4" },
+	[Color1]  = { "#ffffff", "rgb:fff/000/fff" },
 	[Color2]  = { "#654d4d", "#000000" },
 	[Color3]  = { "#000000", "#3ee2b4" },
 	[Color4]  = { "#000000", "#ffa500" },
@@ -29,6 +29,14 @@ static const char *colors[][2]      = {
 	[Color8]  = { "#6fd8ff", "#000000" },
 	[Color9]  = { "#ffffff", "#292121" },
 	[Color10] = { "#000000", "#e6beae" },
+
+	// BUG-FIX: When the screen operates in 10-bit mode, the border color of
+	// some application will be computed in 10-bit while others in 8 bit. For
+	// example, for the color 1111 1111 1111, the border will be either
+	// 11(11 1111 1111) or 1111 (1111 1111). Thus, the only viable color
+	// is black, as well as these perceivably similar colors white,
+	// red, cyan, green, magenta, yellow and blue.
+	[Color11] = { "rgb:fff/00/fff", "#000000" },
 };
 
 /* tagging */
