@@ -100,8 +100,8 @@ static Key keys[] = {
 	{ MODKEY|ControlMask,           XK_n,      movestack,           {.i = +1 } },
 	{ MODKEY|ControlMask|ShiftMask, XK_h,      movestack,           {.i = -2 } },
 	{ MODKEY|ControlMask|ShiftMask, XK_n,      movestack,           {.i = +2 } },
-	{ MODKEY,                       XK_Tab,    focusstack,          {.i = +2 } },
-	{ MODKEY|ShiftMask,             XK_Tab,    focusstack,          {.i = -2 } },
+	{ MODKEY,                       XK_Tab,    focusstack,          {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_Tab,    focusstack,          {.i = +2 } },
 
 	{ MODKEY,                       XK_c,      focusmon,            {.i = -1 } },
 	{ MODKEY,                       XK_t,      focusmon,            {.i = +1 } },
